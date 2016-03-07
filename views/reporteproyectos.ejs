@@ -1,0 +1,130 @@
+<div class="container">
+	<table class="table table-bordered">
+		<tbody>
+			<tr>
+				<td>Proyecto:</td>
+				<td>
+					<select id="usuarios" ng-model="ctrl.selectedUsuario">
+						<option value="0">Elegir proyecto</option>
+						<option ng-repeat="proyecto in ctrl.proyectos" ng-click="ctrl.listarUsuarios(proyecto)" class="ng-cloak" value="{{proyecto.id_proyecto}}">{{proyecto.nombre}}</option>
+					</select>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<div class="row">
+		<div class="col-sm-6">
+			<table class="table table-bordered">
+				<thead>
+					<th>Id</th>
+					<th>Usuario</th>
+					<th>Horas</th>
+				</thead>
+				<tbody ng-repeat="usuario in ctrl.usuarios" class="ng-cloak">
+					<td>{{usuario.id_usuario}}</td>
+					<td>{{usuario.nombres}}</td>
+					<td>{{usuario.horas}}</td>
+				</tbody>
+			</table>
+		</div>
+		<div class="col-sm-6">
+			<div id="pieUsuarios" style="min-width: 310px; height: 400px; max-width: 600px; margin: 0 auto"></div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+	angular
+		.module("app",[])
+		.controller("controlador",["$http",function($http){
+			var ref = this;
+			ref.accion = "";
+			ref.usuarios = [];
+			ref.proyectos = [];
+
+			var hc = {
+				chart: {
+					plotBackgroundColor: null,
+					plotBorderWidth: null,
+					plotShadow: false,
+					type: 'pie'
+				},
+				title: {
+					text: "Horas trabajadas por usuario"
+				},
+				tooltip: {
+					pointFormat: "{series.name}: <b>{point.y}</b>"
+				},
+				plotOptions: {
+					pie: {
+						allowPointSelect: true,
+						cursor: 'pointer',
+						dataLabels: {
+							enabled: true,
+							format: '<b>{point.name}</b>',
+							style: {
+								color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+							}
+						}
+					}
+				},
+				series: [{
+					name: "Horas",
+					colorByPoint: true,
+					data: []
+				}]
+			};
+
+			/* Definición de funciones */
+
+			function listar(){
+				$http
+					.get("/proyectos")
+					.then(
+						function(resp){
+							ref.proyectos = resp.data;
+						},
+						function(err){
+							console.log(err);
+						}
+					);
+			}
+
+			this.listarUsuarios = function(proyecto){
+				ref.usuarios = [];
+				hc.series[0].data = [];
+				var cuenta = 0;
+				$('#pieUsuarios').highcharts(hc);
+				proyecto.usuarios.forEach(function(usuario){
+					$http
+						.get("/usuarios/"+usuario.usuario)
+						.then(function(resp){
+							if(resp.data.length)
+							{
+								resp.data[0].id = usuario.id;
+								resp.data[0].horas = usuario.horas;
+								ref.usuarios[ref.usuarios.length] = resp.data[0];
+
+								hc.series[0].data[cuenta] = {
+									id: resp.data[0].id_usuario,
+									name: resp.data[0].nombres,
+									y: resp.data[0].horas,
+									descripcion: resp.data[0].descripcion
+								};
+
+								cuenta++;
+
+								$('#pieUsuarios').highcharts(hc);
+							}
+						},function(err){
+							console.log(err);
+						});
+				});
+			}
+
+			/* Ejecución de funciones al inicio de la página */
+
+			listar();
+		}])
+</script>

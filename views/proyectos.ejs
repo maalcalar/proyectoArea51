@@ -1,0 +1,242 @@
+<div class="container">
+	<table class="table table-bordered">
+		<thead>
+			<tr class="info">
+				<th>Id</th>
+				<th>Proyecto</th>
+				<th>Inicio</th>
+				<th>Fin</th>
+				<th>Acciones</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="proyecto in ctrl.proyectos" class="ng-cloak">
+				<td>{{proyecto.id_proyecto}}</td>
+				<td>{{proyecto.nombre}}</td>
+				<td>{{proyecto.inicio}}</td>
+				<td>{{proyecto.fin}}</td>
+				<td>
+					<a href ng-click="ctrl.editar(proyecto)" class="btn btn-xs btn-warning">Editar</a>&nbsp;
+					<a href ng-click="ctrl.eliminando(proyecto)" class="btn btn-xs btn-danger">Eliminar</a>&nbsp;
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<button id="btnPopNuevoProyecto" class="btn">Crear Proyecto</button>
+</div>
+
+<div id="nuevoProyecto" class="popup">
+	<span class="button b-close">
+		<span>X</span>
+	</span>
+
+	<h3>Nuevo Proyecto</h3>
+
+	<table class="table table-bordered">
+		<tbody>
+			<tr>
+				<td>Nombre</td>
+				<td><input id="nombre" type="text" ng-model="ctrl.nuevoProyecto.nombre"></td>
+			</tr>
+			<tr>
+				<td>Inicio</td>
+				<td><input id="nInicio" type="text" ng-model="ctrl.nuevoProyecto.inicio"></td>
+			</tr>
+			<tr>
+				<td>Fin</td>
+				<td><input id="nFin" type="text" ng-model="ctrl.nuevoProyecto.fin"></td>
+			</tr>
+			<tr>
+				<td>Descripción</td>
+				<td><textarea ng-model="ctrl.nuevoProyecto.descripcion"></textarea></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<button ng-click="ctrl.crear()" class="btn btn-sm btn-success">Crear</button>
+</div>
+
+<div id="editarProyecto" class="popup">
+	<span class="button b-close">
+		<span>X</span>
+	</span>
+
+	<h3>Editar Proyecto</h3>
+
+	<table class="table table-bordered">
+		<tbody>
+			<tr>
+				<td>Nombre</td>
+				<td><input id="nombre" type="text" ng-model="ctrl.datosProyecto.nombre"></td>
+			</tr>
+			<tr>
+				<td>Inicio</td>
+				<td><input id="eInicio" type="text" ng-model="ctrl.datosProyecto.inicio"></td>
+			</tr>
+			<tr>
+				<td>Fin</td>
+				<td><input id="eFin" type="text" ng-model="ctrl.datosProyecto.fin"></td>
+			</tr>
+			<tr>
+				<td>Descripción</td>
+				<td><textarea ng-model="ctrl.datosProyecto.descripcion"></textarea></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<button ng-click="ctrl.grabar()" class="btn btn-sm btn-success">Grabar</button>
+</div>
+
+<div id="eliminarProyecto" class="popup">
+	<span class="button b-close">
+		<span>X</span>
+	</span>
+
+	<h3>Eliminar Proyecto</h3>
+
+	<br>
+
+	<p>
+		¿Estas seguro de querer eliminar el proyecto<br>
+		<b>{{ctrl.datosProyecto.nombre}}</b>?
+	</p>
+
+	<br>
+
+	<button ng-click="ctrl.eliminar(ctrl.datosProyecto.id_proyecto)" class="btn btn-sm btn-success">Sí</button>
+	<button ng-click="ctrl.cancelar()" class="btn btn-sm btn-danger">Cancelar</button>
+</div>
+
+<script type="text/javascript">
+	document.getElementById("btnPopNuevoProyecto").addEventListener('click', function(){
+		$("#nuevoProyecto").bPopup();
+	});
+
+	$("#nInicio").datepicker({minDate:0});
+	$("#nFin").datepicker({minDate:+1});
+
+	$("#eInicio").datepicker();
+	$("#eFin").datepicker();
+
+	angular
+		.module("app",[])
+		.controller("controlador",["$http",function($http){
+			var ref = this;
+			ref.accion = "";
+			this.nuevoProyecto = {};
+			this.datosProyecto = {};
+
+			/* Definición de funciones */
+
+			function listar(){
+				$http
+					.get("/proyectos")
+					.then(
+						function(resp){
+							resp.data.forEach(function(proyecto){
+								var dInicio = new Date(proyecto.inicio);
+
+								var fInicio = dInicio.getDate() + '/' + (dInicio.getMonth()+1) + '/' + dInicio.getFullYear();
+
+								proyecto.inicio = fInicio;
+
+								var dFin = new Date(proyecto.fin);
+
+								var fFin = dFin.getDate() + '/' + (dFin.getMonth()+1) + '/' + dFin.getFullYear();
+
+								proyecto.fin = fFin;
+							});
+
+							ref.proyectos = resp.data;
+						},
+						function(err){
+							console.log(err);
+						}
+					);
+			}
+
+			this.crear = function() {
+				$http
+					.post("/proyectos", this.nuevoProyecto)
+					.then(function(resp){
+						/*ref.accion="";*/
+						ref.nuevoProyecto = {};
+						listar();
+					}, function(err){
+						console.log(err);
+					})
+			};
+
+			this.editar = function(proyecto) {
+				/*proyecto.accion = "editar";*/
+				$("#editarProyecto").bPopup();
+				$http
+					.get("/proyectos/"+proyecto.id_proyecto)
+					.then(function(resp){
+						if(resp.data.length) {
+							var dInicio = new Date(resp.data[0].inicio);
+
+							var fInicio = (dInicio.getMonth()+1) + '/' + dInicio.getDate() + '/' + dInicio.getFullYear();
+
+							resp.data[0].inicio = fInicio;
+
+							var dFin = new Date(resp.data[0].fin);
+
+							var fFin = (dFin.getMonth()+1) + '/' + dFin.getDate() + '/' + dFin.getFullYear();
+
+							resp.data[0].fin = fFin;
+
+							ref.datosProyecto = resp.data[0];
+						}					
+					}, function(err){
+						console.log(err);
+					})
+			};
+
+			this.grabar = function() {
+				$("#editarProyecto").bPopup().close();
+				$http
+					.put("/proyectos/"+ref.datosProyecto.id_proyecto, ref.datosProyecto)
+					.then(function(resp){
+						ref.datosProyecto = {};
+						listar();
+					}, function(err){
+						console.log(err);
+					})
+			};
+
+			this.eliminando = function(proyecto) {
+				$("#eliminarProyecto").bPopup();
+				this.datosProyecto = proyecto;
+			};
+
+			this.eliminar = function(id) {
+				$("#eliminarProyecto").bPopup().close();
+				$http
+					.delete("/usuariosproyectos/proyecto/"+id)
+					.then(function(resp){
+						
+					},function(err){
+						console.log(err);
+					});
+
+				$http
+					.delete("/proyectos/"+id)
+					.then(function(resp){
+						this.datosProyecto = {};
+						listar();
+					},function(err){
+						console.log(err);
+					});
+			};
+
+			this.cancelar = function() {
+				$("#eliminarProyecto").bPopup().close();
+			};
+
+			/* Ejecución de funciones al inicio de la página */
+
+			listar();
+		}])
+</script>

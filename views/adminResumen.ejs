@@ -1,0 +1,133 @@
+<div class="container">
+	<div class="row">
+		<div class="col-sm-6">
+			<table class="table table-bordered">
+				<thead>
+					<tr class="info">
+						<th>Id</th>
+						<th>Proyecto</th>
+						<th>Horas</th>
+						<th>Inicio</th>
+						<th>Fin</th>
+						<!--<th>Finalización real</th>-->
+						<th>Activo</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="proyecto in ctrl.proyectos" class="ng-cloak">
+						<td>{{proyecto.id_proyecto}}</td>
+						<td>{{proyecto.nombre}}</td>
+						<td>{{proyecto.horas}}</td>
+						<td>{{proyecto.inicio}}</td>
+						<td>{{proyecto.fin}}</td>
+						<!--<td>{{proyecto.termino}}</td>-->
+						<td>{{proyecto.activo}}</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="col-sm-6">
+			<div id="pieProyectos" style="min-width: 310px; height: 400px; max-width: 600px; margin: 0 auto"></div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+	function sumaHoras(obj){
+		var suma = 0;
+
+		obj.forEach(function(usuario){
+			suma += usuario.horas;
+		});
+
+		return suma;
+	}
+
+	angular
+		.module("app",[])
+		.controller("controlador",["$http",function($http){
+			var ref = this;
+
+			var hc = {
+				chart: {
+					plotBackgroundColor: null,
+					plotBorderWidth: null,
+					plotShadow: false,
+					type: 'pie'
+				},
+				title: {
+					text: "Horas trabajadas por proyecto"
+				},
+				tooltip: {
+					pointFormat: "{series.name}: <b>{point.y}</b><br><small>{point.descripcion}</small>"
+				},
+				plotOptions: {
+					pie: {
+						allowPointSelect: true,
+						cursor: 'pointer',
+						dataLabels: {
+							enabled: true,
+							format: '<b>{point.name}</b>',
+							style: {
+								color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+							}
+						}
+					}
+				},
+				series: [{
+					name: "Horas",
+					colorByPoint: true,
+					data: []
+				}]
+			};
+
+			/* Definición de funciones */
+
+			function listar(){
+				$http
+					.get("/proyectos")
+					.then(
+						function(resp){
+							/*console.log(resp.data);*/
+							var cuenta = 0;
+							resp.data.forEach(function(proyecto){
+								var dInicio = new Date(proyecto.inicio);
+
+								var fInicio = dInicio.getDate() + '/' + (dInicio.getMonth()+1) + '/' + dInicio.getFullYear();
+
+								proyecto.inicio = fInicio;
+
+								var dFin = new Date(proyecto.fin);
+
+								var fFin = dFin.getDate() + '/' + (dFin.getMonth()+1) + '/' + dFin.getFullYear();
+
+								proyecto.fin = fFin;
+
+								proyecto.horas = sumaHoras(proyecto.usuarios);
+
+								hc.series[0].data[cuenta] = {
+									id: proyecto.id_proyecto,
+									name: proyecto.nombre,
+									y: sumaHoras(proyecto.usuarios),
+									descripcion: proyecto.descripcion
+								};
+
+								cuenta++;
+							});
+
+							ref.proyectos = resp.data;
+							
+							$('#pieProyectos').highcharts(hc);
+						},
+						function(err){
+							console.log(err);
+						}
+					);
+			}
+
+			/* Ejecución de funciones al inicio de la página */
+
+			listar();
+		}]);
+</script>

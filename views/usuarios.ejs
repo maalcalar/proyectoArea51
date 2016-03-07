@@ -1,0 +1,334 @@
+<div class="container">
+	<table class="table table-bordered">
+		<thead>
+			<tr class="info">
+				<th>Id</th>
+				<th>Usuario</th>
+				<th>Nombre completo</th>
+				<th>Proyectos asignados</th>
+				<th>Acciones</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="usuario in ctrl.usuarios" class="ng-cloak">
+				<td>{{usuario.id_usuario}}</td>
+				<td>{{usuario.usuario}}</td>
+				<td>{{usuario.nombres}} {{usuario.apellidoPaterno}} {{usuario.apellidoMaterno}}</td>
+				<td><span ng-repeat="proyecto in usuario.proyectos" class="ng-cloak">{{proyecto.nombre}}</span></td>
+				<td>
+					<a href ng-click="ctrl.editar(usuario)" class="btn btn-xs btn-warning">Editar</a>&nbsp;
+					<a href ng-click="ctrl.eliminando(usuario)" class="btn btn-xs btn-danger">Eliminar</a>&nbsp;
+					<a href ng-click="ctrl.asignacion(usuario)" class="btn btn-xs btn-success">Asignar proyectos</a>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<button id="btnPopNuevoUsuario" class="btn">Crear Usuario</button>
+</div>
+
+<div id="nuevoUsuario" class="popup">
+	<span class="button b-close">
+		<span>X</span>
+	</span>
+
+	<h3>Nuevo Usuario</h3>
+
+	<table class="table table-bordered">
+		<tbody>
+			<tr>
+				<td>Nombres</td>
+				<td><input id="nombres" type="text" ng-model="ctrl.nuevoUsuario.nombres"></td>
+			</tr>
+			<tr>
+				<td>Apellido paterno</td>
+				<td><input id="apellidoPaterno" type="text" ng-model="ctrl.nuevoUsuario.apellidoPaterno"></td>
+			</tr>
+			<tr>
+				<td>Apellido materno</td>
+				<td><input id="apellidoMaterno" type="text" ng-model="ctrl.nuevoUsuario.apellidoMaterno"></td>
+			</tr>
+			<tr>
+				<td>Usuario</td>
+				<td><input id="usuario" type="text" ng-model="ctrl.nuevoUsuario.usuario"></td>
+			</tr>
+			<tr>
+				<td>Contraseña</td>
+				<td>
+					<input id="contrasena" placeholder="Escriba una contraseña" type="password" ng-model="ctrl.nuevoUsuario.contrasena">
+					<br>
+					<br>
+					<input id="contrasenaConf" placeholder="Vuelva a escribir la contraseña" type="password" ng-model="ctrl.nuevoUsuario.contrasenaConf">
+					<br>
+					<span class="bg-danger" ng-show="ctrl.accion=='errNuevoUsuario'">
+						{{ctrl.error.mensaje}}
+					</span>
+				</td>
+			</tr>
+			<tr>
+				<td>Administrador</td>
+				<td><input id="administrador" type="checkbox" ng-model="ctrl.nuevoUsuario.administrador"></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<button ng-click="ctrl.crear()" class="btn btn-sm btn-success">Crear</button>
+</div>
+
+<div id="editarUsuario" class="popup">
+	<span class="button b-close">
+		<span>X</span>
+	</span>
+
+	<h3>Editar Usuario</h3>
+
+	<table class="table table-bordered">
+		<tbody>
+			<tr>
+				<td>Nombres</td>
+				<td><input id="nombres" type="text" ng-model="ctrl.datosUsuario.nombres"></td>
+			</tr>
+			<tr>
+				<td>Apellido paterno</td>
+				<td><input id="apellidoPaterno" type="text" ng-model="ctrl.datosUsuario.apellidoPaterno"></td>
+			</tr>
+			<tr>
+				<td>Apellido materno</td>
+				<td><input id="apellidoMaterno" type="text" ng-model="ctrl.datosUsuario.apellidoMaterno"></td>
+			</tr>
+			<tr>
+				<td>Usuario</td>
+				<td><input id="usuario" type="text" ng-model="ctrl.datosUsuario.usuario"></td>
+			</tr>
+			<tr>
+				<td>Administrador</td>
+				<td><input id="administrador" type="checkbox" ng-model="ctrl.datosUsuario.administrador"></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<button ng-click="ctrl.grabar()" class="btn btn-sm btn-success">Grabar</button>
+</div>
+
+<div id="eliminarUsuario" class="popup">
+	<span class="button b-close">
+		<span>X</span>
+	</span>
+
+	<h3>Eliminar Usuario</h3>
+
+	<br>
+
+	<p>
+		¿Estas seguro de querer eliminar el usuario<br>
+		<b>{{ctrl.datosUsuario.usuario}}</b>?
+	</p>
+
+	<br>
+
+	<button ng-click="ctrl.eliminar(ctrl.datosUsuario.id_usuario)" class="btn btn-sm btn-success">Sí</button>
+	<button ng-click="ctrl.cancelar()" class="btn btn-sm btn-danger">Cancelar</button>
+</div>
+
+<div id="asignarProyectos" class="popup">
+	<span class="button b-close">
+		<span>X</span>
+	</span>
+
+	<h3>Asignar proyectos</h3>
+
+	<table class="table table-bordered">
+		<thead>
+			<th>Id</th>
+			<th>Proyecto</th>
+			<th>Asignación</th>
+		</thead>
+		<tbody>
+			<tr ng-repeat="proyecto in ctrl.proyectos" class="ng-cloak">
+				<td>{{proyecto.id_proyecto}}</td>
+				<td>{{proyecto.nombre}}</td>
+				<td>
+					<span ng-show="proyecto.asignado">Asignado</span>
+					<span ng-show="!(proyecto.asignado)" ng-click="ctrl.asignar(proyecto)"><button>Asignar</button></span>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+
+<script type="text/javascript">
+	document.getElementById("btnPopNuevoUsuario").addEventListener('click', function(){
+		$("#nuevoUsuario").bPopup();
+	});
+
+	angular
+		.module("app",[])
+		.controller("controlador",["$http",function($http){
+			var ref = this;
+			ref.accion = "";
+			ref.nuevoUsuario = {};
+			ref.datosUsuario = {};
+			ref.error = {};
+			ref.proyectos = [];
+
+			/* Definición de funciones */
+
+			this.listarProyectosxUsuario = function(){
+				ref.usuarios.forEach(function(usuario){
+					usuario.proyectos.forEach(function(proyecto){
+						$http
+							.get("/proyectos/"+proyecto.proyecto)
+							.then(function(resp){
+								if(resp.data.length)
+								{
+									proyecto.nombre = resp.data[0].nombre;
+								}
+							},function(err){
+								console.log(err);
+							});
+					});
+				});
+			};
+
+			function listar(){
+				$http
+					.get("/usuarios")
+					.then(
+						function(resp){
+							ref.usuarios = resp.data;
+							ref.listarProyectosxUsuario();
+						},
+						function(err){
+							console.log(err);
+						}
+					);
+			}
+
+			function listarProyectos(){
+				$http
+					.get("/proyectos")
+					.then(
+						function(resp){
+							ref.proyectos = resp.data;
+						},
+						function(err){
+							console.log(err);
+						}
+					);
+			}
+
+			this.crear = function() {
+				if(this.nuevoUsuario.contrasena == this.nuevoUsuario.contrasenaConf)
+				{
+					ref.accion = "";
+					ref.error.mensaje = "";
+					$http
+						.post("/usuarios", this.nuevoUsuario)
+						.then(function(resp){
+							ref.nuevoUsuario = {};
+							$("#nuevoUsuario").bPopup().close();
+							listar();
+						}, function(err){
+							console.log(err);
+						})
+				}
+				else
+				{
+					ref.accion = "errNuevoUsuario";
+					ref.error.mensaje = "Las contraseñas no coinciden, por favor vuelva a escribirla.";
+				}
+			};
+
+			this.editar = function(usuario) {
+				$("#editarUsuario").bPopup();
+				$http
+					.get("/usuarios/"+usuario.id_usuario)
+					.then(function(resp){
+						if(resp.data.length) {
+							ref.datosUsuario = resp.data[0];
+						}					
+					}, function(err){
+						console.log(err);
+					})
+			};
+
+			this.grabar = function() {
+				$http
+					.put("/usuarios/"+ref.datosUsuario.id_usuario, ref.datosUsuario)
+					.then(function(resp){
+						ref.datosUsuario = {};
+						$("#editarUsuario").bPopup().close();
+						listar();
+					}, function(err){
+						console.log(err);
+					})
+			};
+
+			this.eliminando = function(usuario) {
+				$("#eliminarUsuario").bPopup();
+				this.datosUsuario = usuario;
+			};
+
+			this.eliminar = function(id) {
+				$http
+					.delete("/usuariosproyectos/usuario/"+id)
+					.then(function(resp){
+						
+					},function(err){
+						console.log(err);
+					});
+
+				$http
+					.delete("/usuarios/"+id)
+					.then(function(resp){
+						this.datosUsuario = {};
+						$("#eliminarUsuario").bPopup().close();
+						listar();
+					},function(err){
+						console.log(err);
+					});
+			};
+
+			this.cancelar = function() {
+				$("#eliminarUsuario").bPopup().close();
+			};
+
+			this.asignacion = function(usuario){
+				ref.asignacion.usuario = usuario.id_usuario;
+
+				ref.proyectos.forEach(function(proyectoListado){
+					proyectoListado.asignado = false;
+				});
+
+				usuario.proyectos.forEach(function(proyecto){
+					ref.proyectos.forEach(function(proyectoListado){
+						if (proyectoListado.id_proyecto == proyecto.proyecto)
+						{
+							proyectoListado.asignado = true;
+						}
+					});
+				});
+
+				$("#asignarProyectos").bPopup();
+			}
+
+			this.asignar = function(proyecto){
+				var datos = {usuario: ref.asignacion.usuario, proyecto: proyecto.id_proyecto, horas: 0};
+
+				$http
+					.post("/usuariosproyectos",datos)
+					.then(function(resp){
+						$("#asignarProyectos").bPopup().close();
+						listar();
+						listarProyectos();
+					},function(err){
+						console.log(err);
+					});
+			}
+
+			/* Ejecución de funciones al inicio de la página */
+
+			listar();
+			listarProyectos();
+		}])
+</script>

@@ -1,0 +1,58 @@
+<div class="container">
+	<h3>Proyecto: {{ctrl.proyecto.nombre}}</h3>
+	<h4>Horas: {{ctrl.proyecto.horas}}</h4>
+
+	<textarea style="background-color: black; min-width: 300px; max-width: 100%; height: 350px; color: white">
+		
+	</textarea>
+</div>
+
+<script type="text/javascript">
+	angular
+		.module("app",[])
+		.controller("controlador",["$http",function($http){
+			var ref = this;
+			ref.accion = "";
+			ref.usuario,
+			ref.proyecto;
+
+			/* Definición de funciones */
+
+			this.traerproyecto = function(usuario,idproyecto){
+				usuario.proyectos.forEach(function(proyecto){
+					if(proyecto.proyecto == idproyecto)
+					{
+						$http
+							.get("/proyectos/"+idproyecto)
+							.then(
+								function(resp){
+									ref.proyecto = resp.data[0];
+									ref.proyecto.horas = proyecto.horas;
+								},
+								function(err){
+									console.log(err);
+								}
+							);
+					}
+				});
+			}
+
+			function listar(){
+				$http
+					.get("/usuarios/<%= id_usuario %>")
+					.then(
+						function(resp){
+							ref.usuario = resp.data[0];
+							ref.traerproyecto(ref.usuario,<%= id_proyecto %>);
+						},
+						function(err){
+							console.log(err);
+						}
+					);
+			}
+
+			/* Ejecución de funciones al inicio de la página */
+
+			listar();
+		}])
+</script>

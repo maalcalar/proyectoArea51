@@ -1,0 +1,106 @@
+<div class="container">
+	<table class="table table-bordered">
+		<tbody>
+			<tr>
+				<td>Usuario:</td>
+				<td>
+					<select id="usuarios" ng-model="ctrl.selectedUsuario">
+						<option value="0">Elegir usuario</option>
+						<option ng-repeat="usuario in ctrl.usuarios" ng-click="ctrl.listarProyectos(usuario)" class="ng-cloak" value="{{usuario.id_usuario}}">{{usuario.usuario}}</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>Proyecto:</td>
+				<td>
+					<select id="proyectos" ng-model="ctrl.selectedProyecto">
+						<option value="0">Elegir proyecto</option>
+						<option ng-repeat="proyecto in ctrl.proyectos" class="ng-cloak" value="{{proyecto.id}}">{{proyecto.nombre}} - <span><b>horas: </b>{{proyecto.horas}}</span></option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>Horas (hh:mm):</td>
+				<td><input type="number" min="0" value="0" ng-model="ctrl.tiempo.horas"> : <input type="number" min="0" max="59" value="0" ng-model="ctrl.tiempo.minutos"></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<button id="btnHoras" ng-click="ctrl.asignar()" class="btn">Asignar horas</button>
+</div>
+
+<script type="text/javascript">
+	angular
+		.module("app",[])
+		.controller("controlador",["$http",function($http){
+			var ref = this;
+			ref.accion = "";
+			ref.usuarios = {};
+			ref.proyectos = [];
+
+			/* Definición de funciones */
+
+			function listar(){
+				$http
+					.get("/usuarios")
+					.then(
+						function(resp){
+							ref.usuarios = resp.data;
+						},
+						function(err){
+							console.log(err);
+						}
+					);
+			}
+
+			this.listarProyectos = function(usuario){
+				ref.proyectos = [];
+				usuario.proyectos.forEach(function(proyecto){
+					$http
+						.get("/proyectos/"+proyecto.proyecto)
+						.then(function(resp){
+							if(resp.data.length)
+							{
+								resp.data[0].id = proyecto.id;
+								resp.data[0].horas = proyecto.horas;
+								ref.proyectos[ref.proyectos.length] = resp.data[0];
+							}
+						},function(err){
+							console.log(err);
+						});
+				});
+			}
+
+			this.asignar = function(){
+				$http
+						.get("/usuariosproyectos/"+ref.selectedProyecto)
+						.then(function(resp){
+							if(ref.tiempo.horas || ref.tiempo.minutos)
+							{
+								ref.tiempo.total = resp.data.horas + ref.tiempo.horas + (ref.tiempo.minutos/60);
+
+								ref.grabar(ref.tiempo.total);
+							}
+						},function(err){
+							console.log(err);
+						});
+			}
+
+			this.grabar = function(horas){
+				$http
+					.put("/usuariosproyectos/"+ref.selectedProyecto,{horas: horas})
+					.then(function(resp){
+						listar();
+						document.getElementById("usuarios").options[0].selected = true;
+						ref.proyectos = [];
+						document.getElementById("proyectos").options[0].selected = true;
+					},function(err){
+						console.log(err);
+					});
+			}
+
+			/* Ejecución de funciones al inicio de la página */
+
+			listar();
+		}])
+</script>

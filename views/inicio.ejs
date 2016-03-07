@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Proyectos</title>
+
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<link rel="stylesheet" href="/styles/bootstrap.min.css">
+    <link rel="stylesheet" href="/styles/importer.css">
+
+    <style type="text/css">
+    	.container {
+		    padding-right: 15px;
+		    padding-left: 15px;
+		    margin-right: auto;
+		    margin-left: auto;
+		}
+
+		@media (min-width: 768px) {
+			.container {
+			    width: 750px;
+			}
+		}
+
+		.form-signin {
+		    max-width: 330px;
+		    padding: 15px;
+		    margin: 0 auto;
+		}
+
+		body {
+			background-color: #EEE;
+		}
+
+		.btn-redes {
+			width: 100%;
+			color: white;
+			font-size: 13pt;
+			margin-top: 5px;
+		}
+
+		.btn-redes:hover {
+			color: white;
+		}
+
+		.btn-facebook {
+			background-color: #3a5795;
+		}
+
+		.btn-facebook:hover {
+			background-color: #273d67;
+		}
+
+		.btn-twitter {
+			background-color: #1da1f2;
+		}
+
+		.btn-twitter:hover {
+			background-color: #0c80c5;
+		}
+
+		.btn-google {
+			background-color: #dc5043;
+		}
+
+		.btn-google:hover {
+			background-color: #bc2f23;
+		}
+
+		.btn-github {
+			background-color: #c8c8ca;
+		}
+
+		.btn-github:hover {
+			background-color: #a8a8aa;
+		}
+    </style>
+
+</head>
+<body>
+	<div class="container">
+
+		<div class="form-signin">
+			<h2 class="form-signin-heading">Inicio de sesión</h2>
+			<hr>
+			<h4>Por Redes</h4>
+			<a href="/facebook/login" class="btn btn-redes btn-facebook"><span></span> Facebook</a>
+			<!--<a href="/twitter/login" class="btn btn-redes btn-twitter"><span></span> Twitter</a>-->
+			<a href="/google/login" class="btn btn-redes btn-google"><span></span> Google</a>
+			<a href="/gitHub/login" class="btn btn-redes btn-github"><span></span> GitHub</a>
+			<hr>
+		</div>
+
+		<form class="form-signin" action="/validar" method="post">
+			<h4>Por cuenta de Proyectos</h4>
+			<label for="inputUsuario" class="sr-only">Usuario</label>
+			<input id="inputUsuario" class="form-control" placeholder="Usuario" required="" autofocus="" type="text" name="usuario">
+			<label for="inputContrasena" class="sr-only">Contraseña</label>
+			<input id="inputContrasena" class="form-control" placeholder="Contraseña" required="" type="password" name="contrasena">
+			<button class="btn btn-lg btn-primary btn-block" type="submit">Iniciar sesión</button>
+		</form>
+
+    </div>
+</body>
+</html>

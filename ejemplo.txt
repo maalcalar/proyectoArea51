@@ -1,0 +1,23 @@
+sails> Usuarios.create({usuario:"malcala", contrasena:"46647913", nombres:"Miguel Angel", apellidoPaterno:"Alcalá", apellidoMaterno:"Rios"}).exec(console.log)
+
+sails> Proyectos.create({nombre:"Proyecto01",inicio:new Date("02/19/2016"), fin:new Date("02/24/2016"),descripcion:"Primer proyecto"}).exec(console.log)
+
+sails> UsuariosProyectos.create({usuario:1,proyecto:1,horas:20}).exec(console.log)
+
+sails> Usuarios.find().populate("proyectos").exec(console.log)
+undefined
+sails> null [ { proyectos:
+     [ { id: 1,
+         usuario: 1,
+         proyecto: 1,
+         horas: 20,
+         createdAt: '2016-02-19T05:12:12.000Z',
+         updatedAt: '2016-02-19T05:12:12.000Z' } ],
+    id_usuario: 1,
+    usuario: 'malcala',
+    contrasena: '46647913',
+    nombres: 'Miguel Angel',
+    apellidoPaterno: 'Alcalá',
+    apellidoMaterno: 'Rios',
+    createdAt: '2016-02-19T04:55:30.000Z',
+    updatedAt: '2016-02-19T04:55:30.000Z' } ]
